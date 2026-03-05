@@ -1,5 +1,5 @@
 import NavBar from "./Components/NavBar/Navbar";
-
+import Home from "./Components/HomePage/Home";
 function App(){
     const navbar= [
     { id: 1, path: "/", realName: "Home" },
@@ -14,6 +14,7 @@ function App(){
     return(
         <div>
             <NavBar navbar={navbar} logo= "🌊"/>
+            <Home/>
         </div>
     )
 }
