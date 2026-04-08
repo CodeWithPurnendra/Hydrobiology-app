@@ -61,7 +61,7 @@ src
 Clone the repository:
 
 ```bash
-git clone https://github.com/your-username/hydrobiology-app.git
+git clone https://github.com/CodeWithPurnendra/Hydrobiology-app.git
 ```
 ---
 ### Install dependencies:
