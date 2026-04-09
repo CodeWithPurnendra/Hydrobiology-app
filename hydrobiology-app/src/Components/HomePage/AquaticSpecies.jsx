@@ -1,5 +1,5 @@
-
 import { useState, useEffect } from "react";
+
 function AquaticSpecies() {
   const [species, setSpecies] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -16,7 +16,29 @@ function AquaticSpecies() {
 
         const data = await res.json();
 
-        setSpecies((prev) => [...prev, ...data.results]);
+        // fetch taxonomy from GBIF for each species
+        const enrichedSpecies = await Promise.all(
+          data.results.map(async (item) => {
+            try {
+              const gbifRes = await fetch(
+                `https://api.gbif.org/v1/species/match?name=${item.name}`
+              );
+
+              const gbifData = await gbifRes.json();
+
+              return {
+                ...item,
+                family: gbifData.family,
+                order: gbifData.order,
+                genus: gbifData.genus,
+              };
+            } catch {
+              return item;
+            }
+          })
+        );
+
+        setSpecies((prev) => [...prev, ...enrichedSpecies]);
         setIsLoading(false);
       } catch (error) {
         console.log(error);
@@ -29,58 +51,70 @@ function AquaticSpecies() {
 
   return (
     <div>
-  <section className="bg-slate-100 py-20 px-6">
-    <div className="max-w-7xl mx-auto">
-      <h2 className="text-3xl md:text-4xl font-bold text-center text-slate-800 mb-8">
-        Explore Aquatic Species
-      </h2>
+      <section className="bg-slate-100 py-20 px-6">
+        <div className="max-w-7xl mx-auto">
 
-      <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-8">
-        {species.map((item) => {
-          return (
-            <div
-              key={item.id}
-              className="bg-white rounded-2xl shadow-md p-6 hover:shadow-xl transition"
-            >
-              <img
-                src={item.default_photo?.medium_url}
-                alt={item.preferred_common_name}
-                className="w-full h-64 object-cover rounded-xl mb-4"
-              />
+          <h2 className="text-3xl md:text-4xl font-bold text-center text-slate-800 mb-8">
+            Explore Aquatic Species
+          </h2>
 
-              <h3 className="text-xl font-semibold text-cyan-700 mb-2 capitalize">
-                {item.preferred_common_name || item.name}
-              </h3>
+          <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-8">
+            {species.map((item) => {
+              return (
+                <div
+                  key={item.id}
+                  className="bg-white rounded-2xl shadow-md p-6 hover:shadow-xl transition"
+                >
+                  <img
+                    src={item.default_photo?.medium_url}
+                    alt={item.preferred_common_name}
+                    className="w-full h-64 object-cover rounded-xl mb-4"
+                  />
 
-              <p className="text-slate-600 italic text-sm">{item.name}</p>
-            </div>
-          );
-        })}
-      </div>
+                  <h3 className="text-xl font-semibold text-cyan-700 mb-2 capitalize">
+                    {item.preferred_common_name || item.name}
+                  </h3>
 
-      {isLoading && (
-        <div className="flex justify-center items-center py-10">
-          <div className="relative w-20 h-20">
-            <span className="absolute inset-0 rounded-full border-4 border-cyan-400 opacity-70 animate-ping"></span>
-            <span className="absolute inset-2 rounded-full border-4 border-cyan-500 opacity-70 animate-ping"></span>
-            <span className="absolute inset-4 rounded-full border-4 border-cyan-600 opacity-70 animate-ping"></span>
+                  <p className="text-slate-600 italic text-sm mb-2">
+                    {item.name}
+                  </p>
+
+                  {/* Scientific data from GBIF */}
+                  <div className="text-sm text-slate-600 space-y-1">
+                    <p>Genus: {item.genus || "Unknown"}</p>
+                    <p>Family: {item.family || "Unknown"}</p>
+                    <p>Order: {item.order || "Unknown"}</p>
+                  </div>
+
+                </div>
+              );
+            })}
           </div>
-        </div>
-      )}
 
-      {!isLoading && (
-        <div className="flex justify-center mt-12">
-          <button
-            onClick={() => setPage((prev) => prev + 1)}
-            className="px-8 py-3 bg-cyan-600 hover:bg-cyan-700 text-white font-semibold rounded-full shadow-lg transition hover:scale-105"
-          >
-            View More Species
-          </button>
+          {isLoading && (
+            <div className="flex justify-center items-center py-10">
+              <div className="relative w-20 h-20">
+                <span className="absolute inset-0 rounded-full border-4 border-cyan-400 opacity-70 animate-ping"></span>
+                <span className="absolute inset-2 rounded-full border-4 border-cyan-500 opacity-70 animate-ping"></span>
+                <span className="absolute inset-4 rounded-full border-4 border-cyan-600 opacity-70 animate-ping"></span>
+              </div>
+            </div>
+          )}
+
+          {!isLoading && (
+            <div className="flex justify-center mt-12">
+              <button
+                onClick={() => setPage((prev) => prev + 1)}
+                className="px-8 py-3 bg-cyan-600 hover:bg-cyan-700 text-white font-semibold rounded-full shadow-lg transition hover:scale-105"
+              >
+                View More Species
+              </button>
+            </div>
+          )}
+
         </div>
-      )}
+      </section>
     </div>
-  </section>
-</div>
   );
 }
 

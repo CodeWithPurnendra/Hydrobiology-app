@@ -1,5 +1,4 @@
 import AquaticSpecies from "./AquaticSpecies";
-import Dashboard from "../DashBoard/DashBoard";
 function Home() {
   return (
     <main className="w-full">
@@ -38,7 +37,6 @@ function Home() {
         </div>
       </section>
       <AquaticSpecies/>
-      <Dashboard/>
     </main>
   );
 }
